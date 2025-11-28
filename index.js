@@ -16,7 +16,11 @@ loadEnvFile("./.env");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+const corsOptions = {
+  origin: "https://sahintepesi.com.tr", // Sadece frontend domainine izin ver
+  methods: ["GET", "POST"], // İzin verilen HTTP metodları
+};
+app.use(cors(corsOptions));
 
 const iyzipay = new Iyzipay({
   apiKey: process.env.IYZICO_API_KEY,
@@ -37,7 +41,7 @@ app.post("/api/donation", async (req, res) => {
     paidPrice: amount,
     currency: Iyzipay.CURRENCY.TRY,
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
-    callbackUrl: `http://localhost:8080/api/payment/callback?fullName=${name} ${surname}`,
+    callbackUrl: `https://api.sahintepesi.com.tr/api/payment/callback?fullName=${name} ${surname}`,
     buyer: {
       id: "BY789",
       name: name,
@@ -99,7 +103,7 @@ app.post("/api/payment/callback", (req, res) => {
 
       // Veritabanına kaydet
       return res.redirect(
-        `http://localhost:3000/donation-success?receiptId=${result.paymentId}`,
+        `https://sahintepesi.com.tr/donation-success?receiptId=${result.paymentId}`,
       );
     }
     res.status(200).send("OK");
